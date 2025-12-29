@@ -63,7 +63,8 @@ const char* get_asm_level_name_str(CPU_FLAGS cpu_flags) {
                       {"sse4_2", CPU_FLAGS_SSE4_2},
                       {"avx", CPU_FLAGS_AVX},
                       {"avx2", CPU_FLAGS_AVX2},
-                      {"avx512", CPU_FLAGS_AVX512F}};
+                      {"avx512", CPU_FLAGS_AVX512F},
+                      {"neon", CPU_FLAGS_NEON}};
     const uint32_t para_map_size = sizeof(param_maps) / sizeof(param_maps[0]);
     int32_t i;
 
