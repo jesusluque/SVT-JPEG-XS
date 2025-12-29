@@ -12,18 +12,41 @@ You are solely responsible for determining if your use of jpeg-xs requires any a
 
 This library is implementation of ISO/IEC 21122 protocol.
 
+## Optimizations
+
+The library includes optimizations for x86-64 (AVX2, AVX-512) and ARM64 (NEON) architectures.
+
+### NEON Optimizations (ARM64)
+
+The following modules have been optimized using NEON intrinsics for improved performance on ARM64 platforms (e.g., Apple Silicon):
+
+*   **Discrete Wavelet Transform (DWT):**
+    *   Horizontal DWT: Optimized using `vld2` for efficient deinterleaving and `vext` for sliding window calculations.
+*   **Inverse Discrete Wavelet Transform (IDWT):**
+    *   Horizontal IDWT: Optimized using `vzip` for efficient interleaving and vector operations for lifting steps.
+    *   Vertical IDWT: Optimized vector processing for vertical lifting steps.
+*   **Quantization:**
+    *   Deadzone and Uniform quantization optimized using branchless logic (`vcgt`, `vand`) and vector operations.
+*   **Dequantization:**
+    *   Deadzone and Uniform dequantization optimized for parallel processing of coefficients.
+
+These optimizations provide significant throughput improvements by processing multiple coefficients per instruction cycle and minimizing memory access overhead.
+
 ## Environment and Requirements
 
 Encoder/Decoder sample app and libraries requirements:
  - Any CPU that support x86-64 instruction set
+ - Any CPU that support ARM64 instruction set (Apple Silicon, etc.)
 
 Unit Tests requirements (SvtJpegxsUnitTests):
- -  Any CPU that support x86-64 and AVX2 instruction set
+ - Any CPU that support x86-64 and AVX2 instruction set
+ - Any CPU that support ARM64 and NEON instruction set
 
 Supported OS versions:
 
  - Linux Ubuntu 20.04 and 22.04
  - Windows 10 and Windows 11
+ - macOS 26.2 (25C56)
 
 ## Build and Install
 
@@ -119,6 +142,12 @@ SvtJpegxsEncApp.exe -i <input_file.yuv> -b <output_bitstream.bin> -w 1920 -h 108
 ```
 
 #### Linux
+
+```shell
+./SvtJpegxsEncApp -i <input_file.yuv> -b <output_bitstream.bin> -w 1920 -h 1080 --input-depth 8 --colour-format yuv422 --bpp 5 --decomp_v 2 --decomp_h 5 --lp 4
+```
+
+#### macOS
 
 ```shell
 ./SvtJpegxsEncApp -i <input_file.yuv> -b <output_bitstream.bin> -w 1920 -h 1080 --input-depth 8 --colour-format yuv422 --bpp 5 --decomp_v 2 --decomp_h 5 --lp 4
