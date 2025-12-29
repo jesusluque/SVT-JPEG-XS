@@ -29,7 +29,7 @@ void* semaphore_create(uint32_t initial_count, uint32_t max_count) {
                                               NULL);         // semaphore is not named
 #elif defined(__APPLE__)
     (void)(max_count);
-    semaphore_handle = (Handle_t)dispatch_semaphore_create(initial_count);
+    semaphore_handle = (void*)dispatch_semaphore_create(initial_count);
 #else
     (void)(max_count);
 
@@ -85,8 +85,8 @@ SvtJxsErrorType_t semaphore_block(void* semaphore_handle, int32_t timout_ms) {
         ? SvtJxsErrorSemaphoreUnresponsive
         : SvtJxsErrorNone;
 #elif defined(__APPLE__)
-#ERROR Implement timeout for dispatch_semaphore_wait() !
-    return_error = dispatch_semaphore_wait((dispatch_semaphore_t)semaphore_handle, DISPATCH_TIME_FOREVER)
+    dispatch_time_t timeout = (timout_ms < 0) ? DISPATCH_TIME_FOREVER : dispatch_time(DISPATCH_TIME_NOW, (int64_t)timout_ms * NSEC_PER_MSEC);
+    return_error = dispatch_semaphore_wait((dispatch_semaphore_t)semaphore_handle, timeout)
         ? SvtJxsErrorSemaphoreUnresponsive
         : SvtJxsErrorNone;
 #else

@@ -3,6 +3,8 @@
 * SPDX - License - Identifier: BSD - 2 - Clause - Patent
 */
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+
 #include "gtest/gtest.h"
 #include "Pi.h"
 #include "random.h"
@@ -336,3 +338,4 @@ TEST(Nlt_Linear_Input_16bit, AVX512) {
         test_linear_input_scaling_line_16bit(linear_input_scaling_line_16bit_avx512);
     }
 }
+#endif

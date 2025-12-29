@@ -1,10 +1,28 @@
+# Build directories
 Bin/
-Build/linux/
-Build/windows/
-Build/eclipse/
-Build/coverage_linux
+Build/mac/
+Build/linux/*
+!Build/linux/build.sh
+Build/windows/*
+!Build/windows/build.bat
+Build/eclipse/*
+!Build/eclipse/build_eclipse.sh
+Build/coverage_linux/*
+!Build/coverage_linux/run_coverage.sh
+
+# Binary and data files
 *.yuv
+*.jxs
 *.bin
-*.patch
 *.raw
 *.log
+*.patch
+
+# System and IDE files
+.DS_Store
+.vscode/
+*.ipynb
+
+# WebPlayer artifacts
+WebPlayer/svt_jpegxs_wasm.js
+WebPlayer/*.wasm

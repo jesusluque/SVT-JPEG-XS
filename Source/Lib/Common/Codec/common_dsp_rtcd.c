@@ -41,6 +41,14 @@ CPU_FLAGS get_cpu_flags() {
 
     return flags;
 }
+#elif defined(__aarch64__)
+CPU_FLAGS get_cpu_flags() {
+    return CPU_FLAGS_NEON;
+}
+#else
+CPU_FLAGS get_cpu_flags() {
+    return 0;
+}
 #endif /*ARCH_X86_64*/
 
 #ifdef ARCH_X86_64

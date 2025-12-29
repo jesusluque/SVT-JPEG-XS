@@ -5,8 +5,10 @@
 
 #include "gtest/gtest.h"
 #include "random.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "Enc_avx512.h"
 #include "Dwt53Decoder_AVX2.h"
+#endif
 #include "SvtUtility.h"
 #include "NltEnc.h"
 #include "Pi.h"
@@ -376,6 +378,13 @@ class FRAME_IDWT : public ::testing::TestWithParam<fixture_param_t> {
         test_transform_result();
     }
 
+    void run_test_transform_neon() {
+        setup_decoder_rtcd_internal(CPU_FLAGS_NEON);
+        setup_depricated_test_rtcd_internal(CPU_FLAGS_NEON);
+        test_transform_result();
+    }
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     void run_test_transform_avx2() {
         setup_decoder_rtcd_internal(CPU_FLAGS_AVX2);
         setup_depricated_test_rtcd_internal(CPU_FLAGS_AVX2);
@@ -387,12 +396,21 @@ class FRAME_IDWT : public ::testing::TestWithParam<fixture_param_t> {
         setup_depricated_test_rtcd_internal(CPU_FLAGS_ALL);
         test_transform_result();
     }
+#endif
 };
 
 TEST_P(FRAME_IDWT, TRANSFORM_FRAME_C) {
     run_test_transform_c();
 }
 
+TEST_P(FRAME_IDWT, TRANSFORM_FRAME_NEON) {
+    if (!(CPU_FLAGS_NEON & get_cpu_flags())) {
+        return;
+    }
+    run_test_transform_neon();
+}
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST_P(FRAME_IDWT, TRANSFORM_FRAME_AVX2) {
     run_test_transform_avx2();
 }
@@ -403,6 +421,7 @@ TEST_P(FRAME_IDWT, TRANSFORM_FRAME_AVX512) {
     }
     run_test_transform_avx512();
 }
+#endif
 
 INSTANTIATE_TEST_SUITE_P(FRAME_IDWT, FRAME_IDWT,
                          ::testing::Combine(::testing::Values(8, 10), ::testing::ValuesIn(params_block_sizes),

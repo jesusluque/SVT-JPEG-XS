@@ -6,9 +6,11 @@
 #include "gtest/gtest.h"
 #include "random.h"
 #include "Quant.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "Quant_sse4_1.h"
 #include "Quant_avx2.h"
 #include "Quant_avx512.h"
+#endif
 #include "encoder_dsp_rtcd.h"
 
 #define QUANT_MAX_SIZE 128
@@ -202,6 +204,8 @@ svt_jxs_test_tool::SVTRandom* QuantTest::rand = NULL;
 TEST_P(QuantTest, corectness_test_c) {
     run_correctness(quantization_c);
 }
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST_P(QuantTest, corectness_test_sse41) {
     run_correctness(quantization_sse4_1);
 }
@@ -215,5 +219,14 @@ TEST_P(QuantTest, corectness_test_avx512) {
         run_correctness(quantization_avx512);
     }
 }
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "Quant_neon.h"
+
+TEST_P(QuantTest, corectness_test_neon) {
+    run_correctness(quantization_neon);
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(Quant, QuantTest, ::testing::Range(0, (int)RAND_SIZE));

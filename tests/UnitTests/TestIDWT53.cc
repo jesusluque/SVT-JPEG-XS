@@ -3,6 +3,8 @@
 * SPDX - License - Identifier: BSD - 2 - Clause - Patent
 */
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+
 #include "gtest/gtest.h"
 #include "random.h"
 #include <immintrin.h>
@@ -254,3 +256,5 @@ TEST_P(TransformIDWT53, DISABLED_speed_horizontal_AVX2) {
 }
 
 INSTANTIATE_TEST_SUITE_P(TransformIDWT53, TransformIDWT53, ::testing::Combine(::testing::ValuesIn(params_block_sizes)));
+
+#endif

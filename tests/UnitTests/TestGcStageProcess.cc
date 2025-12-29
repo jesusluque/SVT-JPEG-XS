@@ -6,15 +6,21 @@
 #include "gtest/gtest.h"
 #include "PictureControlSet.h"
 #include "random.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include <immintrin.h>
+#endif
 #include "GcStageProcess.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "Enc_avx512.h"
+#endif
 #include "PiEnc.h"
 #include "EncDec.h"
 #include "encoder_dsp_rtcd.h"
 #include "Codestream.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "group_coding_sse4_1.h"
 #include "RateControl_avx2.h"
+#endif
 
 void test_gc_stage_scalar(void (*test_fn)(uint8_t* gcli_data_ptr, uint16_t* coeff_data_ptr_16bit, uint32_t group_size,
                                           uint32_t width)) {
@@ -23,7 +29,11 @@ void test_gc_stage_scalar(void (*test_fn)(uint8_t* gcli_data_ptr, uint16_t* coef
     setup_encoder_rtcd_internal(CPU_FLAGS_ALL);
 
     svt_log2_32 = log2_32_c; //Set ASM pointer
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     gc_precinct_stage_scalar_loop = gc_precinct_stage_scalar_loop_ASM;
+#else
+    gc_precinct_stage_scalar_loop = gc_precinct_stage_scalar_loop_c;
+#endif
     uint32_t group_size = 4;
 
     //Input
@@ -79,6 +89,7 @@ void test_gc_stage_scalar(void (*test_fn)(uint8_t* gcli_data_ptr, uint16_t* coef
     free(out_compare_msb);
 }
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST(GcStage, gc_stage_scalar_avx2) {
     test_gc_stage_scalar(gc_precinct_stage_scalar_avx2);
 }
@@ -113,3 +124,4 @@ TEST(GcStage, gc_precinct_sigflags_max_sse41) {
     free(ref_significance_data_ptr);
     free(mod_significance_data_ptr);
 }
+#endif

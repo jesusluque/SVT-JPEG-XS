@@ -6,22 +6,38 @@
 #define ENCODER_RTCD_C
 #include "encoder_dsp_rtcd.h"
 #include "GcStageProcess.h"
+#ifdef ARCH_X86_64
 #include "NltEnc_avx2.h"
+#endif
 #include "DwtStageProcess.h"
+#ifdef ARCH_X86_64
 #include "Enc_avx512.h"
+#endif
 #include "GcStageProcess.h"
 #include "Dwt.h"
+#ifdef ARCH_X86_64
 #include "Dwt_AVX2.h"
+#endif
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "Dwt_neon.h"
+#include "Quant_neon.h"
+#endif
 #include "NltEnc.h"
+#ifdef ARCH_X86_64
 #include "Quant_sse4_1.h"
 #include "Quant_avx2.h"
 #include "Quant_avx512.h"
+#endif
 #include "Quant.h"
 #include "PackPrecinct.h"
+#ifdef ARCH_X86_64
 #include "Pack_avx512.h"
 #include "group_coding_sse4_1.h"
+#endif
 #include "RateControl.h"
+#ifdef ARCH_X86_64
 #include "RateControl_avx2.h"
+#endif
 
 /**************************************
  * Instruction Set Support
@@ -160,4 +176,11 @@ void setup_encoder_rtcd_internal(CPU_FLAGS flags) {
                     convert_packed_to_planar_rgb_16bit_c,
                     convert_packed_to_planar_rgb_16bit_avx2,
                     convert_packed_to_planar_rgb_16bit_avx512);
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+    if (flags & CPU_FLAGS_NEON) {
+        dwt_horizontal_line = dwt_horizontal_line_neon;
+        quantization = quantization_neon;
+    }
+#endif
 }

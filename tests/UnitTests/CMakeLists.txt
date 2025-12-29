@@ -5,7 +5,9 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-add_subdirectory(UnitTest_AVX512)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "amd64")
+    add_subdirectory(UnitTest_AVX512)
+endif()
 
 include_directories(
     ${gtest_SOURCE_DIR}/include
@@ -24,23 +26,39 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/Source/Lib/Decoder/ASM_AVX512/
     ${PROJECT_SOURCE_DIR}/Source/Lib/Decoder/ASM_AVX2/
     ${PROJECT_SOURCE_DIR}/Source/Lib/Decoder/ASM_SSE4_1/
+    ${PROJECT_SOURCE_DIR}/Source/Lib/Encoder/ASM_NEON
+    ${PROJECT_SOURCE_DIR}/Source/Lib/Decoder/ASM_NEON
 )
 
 #ALL LIBS
+set(ASM_OBJECTS "")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "amd64")
+    list(APPEND ASM_OBJECTS
+        $<TARGET_OBJECTS:COMMON_ASM_SSE2>
+        $<TARGET_OBJECTS:COMMON_ASM_AVX2>
+        $<TARGET_OBJECTS:ENCODER_ASM_SSE2>
+        $<TARGET_OBJECTS:ENCODER_ASM_SSE4_1>
+        $<TARGET_OBJECTS:ENCODER_ASM_AVX2>
+        $<TARGET_OBJECTS:ENCODER_ASM_AVX512>
+        $<TARGET_OBJECTS:DECODER_ASM_AVX512>
+        $<TARGET_OBJECTS:DECODER_ASM_AVX2>
+        $<TARGET_OBJECTS:DECODER_ASM_SSE4_1>
+        $<TARGET_OBJECTS:SvtJpegxsUnitTests_AVX512>
+    )
+endif()
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    list(APPEND ASM_OBJECTS
+        $<TARGET_OBJECTS:DECODER_ASM_NEON>
+        $<TARGET_OBJECTS:ENCODER_ASM_NEON>
+    )
+endif()
+
 set(lib_list_all
     $<TARGET_OBJECTS:COMMON_CODEC>
-    $<TARGET_OBJECTS:COMMON_ASM_SSE2>
-    $<TARGET_OBJECTS:COMMON_ASM_AVX2>
     $<TARGET_OBJECTS:ENCODER_CODEC>
-    $<TARGET_OBJECTS:ENCODER_ASM_SSE2>
-    $<TARGET_OBJECTS:ENCODER_ASM_SSE4_1>
-    $<TARGET_OBJECTS:ENCODER_ASM_AVX2>
-    $<TARGET_OBJECTS:ENCODER_ASM_AVX512>
     $<TARGET_OBJECTS:DECODER_CODEC>
-    $<TARGET_OBJECTS:DECODER_ASM_AVX512>
-    $<TARGET_OBJECTS:DECODER_ASM_AVX2>
-    $<TARGET_OBJECTS:DECODER_ASM_SSE4_1>
-    $<TARGET_OBJECTS:SvtJpegxsUnitTests_AVX512>
+    ${ASM_OBJECTS}
     cpuinfo_public
     )
 
@@ -64,6 +82,9 @@ target_link_libraries(SvtJpegxsUnitTests PUBLIC
     gtest
     gtest_main)
 
-add_dependencies(SvtJpegxsUnitTests SvtJpegxsLib SvtJpegxsUnitTests_AVX512)
+add_dependencies(SvtJpegxsUnitTests SvtJpegxsLib)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "amd64")
+    add_dependencies(SvtJpegxsUnitTests SvtJpegxsUnitTests_AVX512)
+endif()
 
 add_test(SvtJpegxsUnitTests ${CMAKE_OUTPUT_DIRECTORY}/SvtJpegxsUnitTests)

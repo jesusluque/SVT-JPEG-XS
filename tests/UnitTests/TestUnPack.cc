@@ -5,9 +5,12 @@
 
 #include "gtest/gtest.h"
 #include "random.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "UnPack_avx2.h"
+#endif
 #include "Packing.h"
 #include "BitstreamWriter.h"
+#include "Codestream.h"
 
 typedef SvtJxsErrorType_t (*unpack_data)(bitstream_reader_t* bitstream, uint16_t* buf, uint32_t w, uint8_t* gclis,
                                          uint32_t group_size, uint8_t gtli, uint8_t sign_flag, uint8_t* leftover_signs_num,
@@ -232,9 +235,11 @@ TEST(unpack_data_test, unpack_data_C) {
     unpack_test(unpack_data_c);
 }
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST(unpack_data_test, unpack_data_AVX2) {
     unpack_test(unpack_data_avx2);
 }
+#endif
 
 TEST(unpack_data_test, unpack_sign) {
     const uint32_t bitstream_reader_size = 80;

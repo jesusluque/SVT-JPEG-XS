@@ -362,6 +362,12 @@ class FRAME_DWT : public ::testing::TestWithParam<fixture_param_t> {
         test_transform_result();
     }
 
+    void run_test_transform_neon() {
+        setup_encoder_rtcd_internal(CPU_FLAGS_NEON);
+        setup_depricated_test_rtcd_internal(CPU_FLAGS_NEON);
+        test_transform_result();
+    }
+
     void run_test_transform_avx2() {
         setup_encoder_rtcd_internal(CPU_FLAGS_AVX2);
         setup_depricated_test_rtcd_internal(CPU_FLAGS_AVX2);
@@ -377,6 +383,13 @@ class FRAME_DWT : public ::testing::TestWithParam<fixture_param_t> {
 
 TEST_P(FRAME_DWT, TRANSFORM_FRAME_C) {
     run_test_transform_c();
+}
+
+TEST_P(FRAME_DWT, TRANSFORM_FRAME_NEON) {
+    if (!(CPU_FLAGS_NEON & get_cpu_flags())) {
+        return;
+    }
+    run_test_transform_neon();
 }
 
 TEST_P(FRAME_DWT, TRANSFORM_FRAME_AVX2) {

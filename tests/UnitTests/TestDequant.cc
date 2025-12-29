@@ -5,13 +5,17 @@
 
 #include "gtest/gtest.h"
 #include "random.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include <immintrin.h>
+#endif
 #include "SvtUtility.h"
 #include "DecHandle.h"
 #include "SvtType.h"
 #include "Dequant.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "Dequant_SSE4.h"
 #include "Dequant_avx512.h"
+#endif
 
 enum DEQUANT_RAND_TYPE { RAND_CUSTOM = 0, RAND_ONE, RAND_ZERO, RAND_FULL, RAND_SIZE };
 
@@ -137,6 +141,7 @@ class DequantFixture : public ::testing::TestWithParam<int> {
 
 svt_jxs_test_tool::SVTRandom* DequantFixture::rnd = NULL;
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST_P(DequantFixture, Uniform_SSE4_1) {
     run_test_uniform(dequant_sse4_1);
 }
@@ -161,5 +166,28 @@ TEST_P(DequantFixture, DISABLED_speed_SSE4_1) {
     run_test_speed(QUANT_TYPE_UNIFORM, dequant_sse4_1);
     run_test_speed(QUANT_TYPE_DEADZONE, dequant_sse4_1);
 }
+#endif
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+INSTANTIATE_TEST_SUITE_P(Dequant, DequantFixture, ::testing::Range(0, (int)RAND_SIZE));
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "Dequant_neon.h"
+
+TEST_P(DequantFixture, Uniform_NEON) {
+    run_test_uniform(dequant_neon);
+}
+
+TEST_P(DequantFixture, Deadzone_NEON) {
+    run_test_deadzone(dequant_neon);
+}
+
+TEST_P(DequantFixture, Speed_NEON) {
+    run_test_speed(QUANT_TYPE_UNIFORM, dequant_neon);
+    run_test_speed(QUANT_TYPE_DEADZONE, dequant_neon);
+}
 
 INSTANTIATE_TEST_SUITE_P(Dequant, DequantFixture, ::testing::Range(0, (int)RAND_SIZE));
+#endif
+

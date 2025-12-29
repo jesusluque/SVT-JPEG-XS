@@ -5,13 +5,16 @@
 
 #include "gtest/gtest.h"
 #include "random.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "Pack_avx512.h"
 #include "RateControl_avx2.h"
+#endif
 #include "RateControl.h"
 #include "PackPrecinct.h"
 #include "SvtUtility.h"
 #include "encoder_dsp_rtcd.h"
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST(pack_data_single_group, AVX512) {
     if (!(CPU_FLAGS_AVX512F & get_cpu_flags())) {
         return;
@@ -59,6 +62,7 @@ TEST(pack_data_single_group, AVX512) {
     free(buf);
     delete rnd;
 }
+#endif
 
 #define MAX_WIDTH_VLC_ENCODE_GET_BITS 3840
 uint32_t vlc_encode_get_bits_sizes[] = {
@@ -104,6 +108,7 @@ void rate_control_calc_vpred_cost_nosigf_test(uint32_t (*test_fn)(uint32_t, uint
     delete rnd;
 }
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST(rate_control_calc_vpred_cost_nosigf_, AVX2) {
     rate_control_calc_vpred_cost_nosigf_test(rate_control_calc_vpred_cost_nosigf_avx2);
 }
@@ -197,3 +202,4 @@ TEST(rate_control_calc_vpred_cost_sigf_nosigf_, AVX512) {
     free(out_sigf_mod);
     delete rnd;
 }
+#endif

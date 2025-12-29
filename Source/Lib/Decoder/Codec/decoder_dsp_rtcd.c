@@ -5,18 +5,32 @@
 
 #define DECODER_RTCD_C
 #include "decoder_dsp_rtcd.h"
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "Idwt_neon.h"
+#include "Dequant_neon.h"
+#endif
+#ifdef ARCH_X86_64
 #include "Dwt53Decoder_AVX2.h"
+#endif
 #include "Dequant.h"
+#ifdef ARCH_X86_64
 #include "Dequant_SSE4.h"
+#endif
 #include "Idwt.h"
 #include "NltDec.h"
+#ifdef ARCH_X86_64
 #include "NltDec_AVX2.h"
+#endif
 #include "Precinct.h"
+#ifdef ARCH_X86_64
 #include "UnPack_avx2.h"
+#endif
 #include "Packing.h"
+#ifdef ARCH_X86_64
 #include "idwt-avx512.h"
 #include "NltDec_avx512.h"
 #include "Dequant_avx512.h"
+#endif
 
 /**************************************
  * Instruction Set Support
@@ -115,4 +129,14 @@ void setup_decoder_rtcd_internal(CPU_FLAGS flags) {
     SET_AVX2_AVX512(idwt_vertical_line, idwt_vertical_line_c, idwt_vertical_line_avx2, idwt_vertical_line_avx512);
     SET_AVX2_AVX512(
         idwt_vertical_line_recalc, idwt_vertical_line_recalc_c, idwt_vertical_line_recalc_avx2, idwt_vertical_line_recalc_avx512);
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+    if (flags & CPU_FLAGS_NEON) {
+        idwt_horizontal_line_lf16_hf16 = idwt_horizontal_line_lf16_hf16_neon;
+        idwt_horizontal_line_lf32_hf16 = idwt_horizontal_line_lf32_hf16_neon;
+        idwt_vertical_line = idwt_vertical_line_neon;
+        idwt_vertical_line_recalc = idwt_vertical_line_recalc_neon;
+        dequant = dequant_neon;
+    }
+#endif
 }

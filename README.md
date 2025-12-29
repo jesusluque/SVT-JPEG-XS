@@ -65,6 +65,24 @@ Supported OS versions:
 - __API headers location__
   - API headers can be found under `Source/API`
 
+### macOS* Operating Systems (Apple Silicon & Intel)
+
+- __Build Requirements__
+  - CMake 3.16 or later
+  - Xcode Command Line Tools
+
+- __Build Instructions__
+  - `mkdir -p Build/mac`
+  - `cd Build/mac`
+  - `cmake ../.. -DCMAKE_BUILD_TYPE=Release`
+  - `make -j$(sysctl -n hw.ncpu)`
+
+- __Binaries and libraries location__
+  - Binaries can be found under `Bin/Release`
+
+- __API headers location__
+  - API headers can be found under `Source/API`
+
 ## Encoder
 
 ### Supported colour formats

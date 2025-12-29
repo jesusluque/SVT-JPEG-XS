@@ -7,11 +7,16 @@
 #include "random.h"
 #include "Dwt.h"
 #include "Idwt.h"
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 #include "Enc_avx512.h"
 #include "Dwt53Decoder_AVX2.h"
+#include "CodeDeprecated-avx512.h"
+#endif
 #include "SvtUtility.h"
 #include "CodeDeprecated.h"
-#include "CodeDeprecated-avx512.h"
+#if defined(__aarch64__) || defined(_M_ARM64)
+#include "Dwt_neon.h"
+#endif
 
 typedef ::testing::tuple<int, int> size_param_t;
 
@@ -80,6 +85,7 @@ class DWT_IDWT : public ::testing::TestWithParam<fixture_param_t> {
         }
     }
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
     void run_test_dwt_vertical_avx512() {
         memset(lf_buf_c, 0, buffer_len);
         memset(hf_buf_c, 0, buffer_len);
@@ -143,6 +149,36 @@ class DWT_IDWT : public ::testing::TestWithParam<fixture_param_t> {
 
         ASSERT_EQ(0, memcmp(data_out_c, data_out_avx, buffer_len));
     }
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+    void run_test_dwt_horizontal_neon() {
+        memset(lf_buf_c, 0, buffer_len);
+        memset(hf_buf_c, 0, buffer_len);
+        memset(lf_buf_avx, 0, buffer_len);
+        memset(hf_buf_avx, 0, buffer_len);
+
+        for (int i = 0; i < 5; ++i) {
+            SetRandData();
+
+            dwt_horizontal_depricated_c(lf_buf_c, hf_buf_c, data_in, width, height, stride, stride, stride);
+            
+            // NEON implementation loop
+            int32_t* in_ptr = data_in;
+            int32_t* lf_ptr = lf_buf_avx;
+            int32_t* hf_ptr = hf_buf_avx;
+            for (int h = 0; h < height; h++) {
+                dwt_horizontal_line_neon(lf_ptr, hf_ptr, in_ptr, width);
+                in_ptr += stride;
+                lf_ptr += stride;
+                hf_ptr += stride;
+            }
+
+            ASSERT_EQ(0, memcmp(lf_buf_c, lf_buf_avx, buffer_len));
+            ASSERT_EQ(0, memcmp(hf_buf_c, hf_buf_avx, buffer_len));
+        }
+    }
+#endif
 
     void run_test_vertical_c() {
         for (int i = 0; i < 5; ++i) {
@@ -200,6 +236,7 @@ class DWT_IDWT : public ::testing::TestWithParam<fixture_param_t> {
     svt_jxs_test_tool::SVTRandom* rnd;
 };
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
 TEST_P(DWT_IDWT, VERTICAL_DWT_AVX512) {
     if (CPU_FLAGS_AVX512F & get_cpu_flags()) {
         run_test_dwt_vertical_avx512();
@@ -219,6 +256,7 @@ TEST_P(DWT_IDWT, VERTICAL_IDWT_AVX2) {
 TEST_P(DWT_IDWT, DISABLED_HORIZONTAL_IDWT_AVX2) {
     run_test_idwt_horizontal_avx2();
 }
+#endif
 
 TEST_P(DWT_IDWT, VERTICAL_ALL_C) {
     run_test_vertical_c();
@@ -227,5 +265,11 @@ TEST_P(DWT_IDWT, VERTICAL_ALL_C) {
 TEST_P(DWT_IDWT, HORIZONTAL_ALL_C) {
     run_test_horizontal_c();
 }
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+TEST_P(DWT_IDWT, HORIZONTAL_DWT_NEON) {
+    run_test_dwt_horizontal_neon();
+}
+#endif
 
 INSTANTIATE_TEST_SUITE_P(DWT_IDWT, DWT_IDWT, ::testing::Combine(::testing::ValuesIn(params_block_sizes)));
